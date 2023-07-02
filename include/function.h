@@ -2,16 +2,16 @@
 #define _FUNCTION_H
 
 
-/*
-用于返回按下按键时的时间戳
+double GetKeyPressTimestamp();
 
 
-*/
-LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam);
 
-HHOOK SetKeyboardHook();
-
-void MessageLoop(HHOOK hook);
+//
+//LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam);//记录键盘按下时间戳
+//
+//HHOOK SetKeyboardHook();//设置HOOK事件
+//
+//void MessageLoop(HHOOK hook);//
 
 #endif // !_FUNCTION_H
 
