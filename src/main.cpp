@@ -3,7 +3,6 @@
 #include <windows.h>
 #include"function.h"
 
-
 // 函数原型
 void waitForAnyKey();
 double getElapsedTime(LARGE_INTEGER startTime, LARGE_INTEGER frequency);
@@ -57,8 +56,6 @@ void monitorKeyPress()
     QueryPerformanceFrequency(&frequency);
     QueryPerformanceCounter(&startTime);
 
-    double pressStartTime = 0.0;
-
     while (1)
     {
         if (ReadConsoleInput(hConsoleIn, &inputRec, 1, &numEventsRead))
@@ -71,27 +68,22 @@ void monitorKeyPress()
                     {
                         break;
                     }
-                    else if (pressStartTime == 0.0)
+                    else
                     {
-                        // 记录按键按下时间
-                        pressStartTime = getElapsedTime(startTime, frequency);
+                        // 获取按键按下时间戳
+                        double pressTime = getElapsedTime(startTime, frequency);
+
+                        printf("Key '%c' pressed at %.3f milliseconds\n", inputRec.Event.KeyEvent.uChar.AsciiChar, pressTime);
                     }
                 }
                 else
                 {
-                    if (pressStartTime != 0.0)
-                    {
-                        // 计算按键抬起时间差
-                        double pressEndTime = getElapsedTime(startTime, frequency);
-                        double pressDuration = pressEndTime - pressStartTime;
+                    // 获取按键抬起时间戳
+                    double releaseTime = getElapsedTime(startTime, frequency);
 
-                        printf("Key released after %.3f milliseconds\n", pressDuration);
-
-                        pressStartTime = 0.0;
-                    }
+                    printf("Key '%c' released at %.3f milliseconds\n", inputRec.Event.KeyEvent.uChar.AsciiChar, releaseTime);
                 }
             }
         }
     }
 }
-
