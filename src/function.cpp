@@ -1,11 +1,8 @@
 #include <stdio.h>
 #include <iostream>
-#include <windows.h>
 #include <stdlib.h>
 #include <conio.h>
 #include <Windows.h>
-
-
 
 // 初始化计时器频率
 void initializeTimer(LARGE_INTEGER* frequency) {
@@ -13,14 +10,14 @@ void initializeTimer(LARGE_INTEGER* frequency) {
 }
 
 // 获取当前时间戳
-long getCurrentTimestamp(LARGE_INTEGER* frequency) {
+long getCurrentTimestamp(LARGE_INTEGER* frequency, LARGE_INTEGER* start_time) {
     LARGE_INTEGER current_time;
     QueryPerformanceCounter(&current_time);
-    return (long)((double)current_time.QuadPart * 1000.0 / frequency->QuadPart);
+    return (long)(((double)current_time.QuadPart - (double)start_time->QuadPart) * 1000.0 / frequency->QuadPart);
 }
 
 // 打印按键时间戳信息
-void printTimestamp(char key, char* action, long timestamp) {
+void printTimestamp(char key, const char* action, long timestamp) {
     printf("按下的按键: %c\n", key);
     printf("操作: %s\n", action);
     printf("时间戳: %ldms\n\n", timestamp);
@@ -30,8 +27,14 @@ void printTimestamp(char key, char* action, long timestamp) {
 void recordKeystrokes(LARGE_INTEGER* frequency) {
     int key;
     long start_time, end_time;
+    LARGE_INTEGER start_counter;
+    LARGE_INTEGER current_counter;
 
     printf("按下按键开始记录，按下ESC退出。\n");
+
+    // 获取起始时间戳和计数器
+    QueryPerformanceCounter(&start_counter);
+    start_time = getCurrentTimestamp(frequency, &start_counter);
 
     while (1) {
         if (_kbhit()) {
@@ -41,101 +44,99 @@ void recordKeystrokes(LARGE_INTEGER* frequency) {
                 break;
             }
 
-            start_time = getCurrentTimestamp(frequency);
-            printTimestamp(key, "按下", start_time);
-        }
+            end_time = getCurrentTimestamp(frequency, &start_counter);
+            printTimestamp(key, "按下", end_time);
 
-        if (_kbhit()) {
-            key = _getch();
-            if (key == 27) {
-                printf("\n程序已退出。\n");
-                break;
+            // 继续循环检测是否有松开的按键
+            while (_kbhit()) {
+                key = _getch();
+                if (key == 27) {
+                    printf("\n程序已退出。\n");
+                    break;
+                }
             }
 
-            end_time = getCurrentTimestamp(frequency);
+            end_time = getCurrentTimestamp(frequency, &start_counter);
             printTimestamp(key, "弹起", end_time);
         }
     }
 }
 
 
-
-
-
 //////////////////////////////////老版本/////////////////////////////////////////
 
-
-
-// 等待用户按下任意键
-void waitForAnyKey()
-{
-    HANDLE hConsoleIn = GetStdHandle(STD_INPUT_HANDLE);
-    INPUT_RECORD inputRec;
-    DWORD numEventsRead;
-
-    ReadConsoleInput(hConsoleIn, &inputRec, 1, &numEventsRead);
-    while (inputRec.EventType != KEY_EVENT || !inputRec.Event.KeyEvent.bKeyDown)
-    {
-        ReadConsoleInput(hConsoleIn, &inputRec, 1, &numEventsRead);
-    }
-}
-
-// 获取时间差（毫秒）
-double getElapsedTime(LARGE_INTEGER startTime, LARGE_INTEGER frequency)
-{
-    LARGE_INTEGER currentTime;
-    QueryPerformanceCounter(&currentTime);
-
-    double elapsedMilliseconds = (double)(currentTime.QuadPart - startTime.QuadPart) / frequency.QuadPart * 1000;
-
-    return elapsedMilliseconds;
-}
-
-// 监视键盘按键事件
-void monitorKeyPress()
-{
-    HANDLE hConsoleIn = GetStdHandle(STD_INPUT_HANDLE);
-    INPUT_RECORD inputRec;
-    DWORD numEventsRead;
-
-    LARGE_INTEGER frequency;
-    LARGE_INTEGER startTime;
-    QueryPerformanceFrequency(&frequency);
-    QueryPerformanceCounter(&startTime);
-
-    while (1)
-    {
-        if (ReadConsoleInput(hConsoleIn, &inputRec, 1, &numEventsRead))
-        {
-            if (inputRec.EventType == KEY_EVENT)
-            {
-                if (inputRec.Event.KeyEvent.bKeyDown)
-                {
-                    if (inputRec.Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        // 获取按键按下时间戳
-                        double pressTime = getElapsedTime(startTime, frequency);
-
-                        printf("Key '%c' pressed at %.3f milliseconds\n", inputRec.Event.KeyEvent.uChar.AsciiChar, pressTime);
-                    }
-                }
-                else
-                {
-                    // 获取按键抬起时间戳
-                    double releaseTime = getElapsedTime(startTime, frequency);
-
-                    printf("Key '%c' released at %.3f milliseconds\n", inputRec.Event.KeyEvent.uChar.AsciiChar, releaseTime);
-                }
-            }
-        }
-    }
-}
-
-
+//
+//
+//// 等待用户按下任意键
+//void waitForAnyKey()
+//{
+//    HANDLE hConsoleIn = GetStdHandle(STD_INPUT_HANDLE);
+//    INPUT_RECORD inputRec;
+//    DWORD numEventsRead;
+//
+//    ReadConsoleInput(hConsoleIn, &inputRec, 1, &numEventsRead);
+//    while (inputRec.EventType != KEY_EVENT || !inputRec.Event.KeyEvent.bKeyDown)
+//    {
+//        ReadConsoleInput(hConsoleIn, &inputRec, 1, &numEventsRead);
+//    }
+//}
+//
+//// 获取时间差（毫秒）
+//double getElapsedTime(LARGE_INTEGER startTime, LARGE_INTEGER frequency)
+//{
+//    LARGE_INTEGER currentTime;
+//    QueryPerformanceCounter(&currentTime);
+//
+//    double elapsedMilliseconds = (double)(currentTime.QuadPart - startTime.QuadPart) / frequency.QuadPart * 1000;
+//
+//    return elapsedMilliseconds;
+//}
+//
+//// 监视键盘按键事件
+//void monitorKeyPress()
+//{
+//    HANDLE hConsoleIn = GetStdHandle(STD_INPUT_HANDLE);
+//    INPUT_RECORD inputRec;
+//    DWORD numEventsRead;
+//
+//    LARGE_INTEGER frequency;
+//    LARGE_INTEGER startTime;
+//    QueryPerformanceFrequency(&frequency);
+//    QueryPerformanceCounter(&startTime);
+//
+//    while (1)
+//    {
+//        if (ReadConsoleInput(hConsoleIn, &inputRec, 1, &numEventsRead))
+//        {
+//            if (inputRec.EventType == KEY_EVENT)
+//            {
+//                if (inputRec.Event.KeyEvent.bKeyDown)
+//                {
+//                    if (inputRec.Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE)
+//                    {
+//                        break;
+//                    }
+//                    else
+//                    {
+//                        // 获取按键按下时间戳
+//                        double pressTime = getElapsedTime(startTime, frequency);
+//
+//                        printf("Key '%c' pressed at %.3f milliseconds\n", inputRec.Event.KeyEvent.uChar.AsciiChar, pressTime);
+//                    }
+//                }
+//                else
+//                {
+//                    // 获取按键抬起时间戳
+//                    double releaseTime = getElapsedTime(startTime, frequency);
+//
+//                    printf("Key '%c' released at %.3f milliseconds\n", inputRec.Event.KeyEvent.uChar.AsciiChar, releaseTime);
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//
 //
 //
 //double GetKeyPressTimestamp()

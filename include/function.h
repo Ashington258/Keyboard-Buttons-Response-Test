@@ -16,30 +16,18 @@ void printTimestamp(char key, char* action, long timestamp);
 void recordKeystrokes(LARGE_INTEGER* frequency);
 
 
+//////////老版本//////////////
+
+//
+//// 函数原型
+//void waitForAnyKey();
+//double getElapsedTime(LARGE_INTEGER startTime, LARGE_INTEGER frequency);
+//void monitorKeyPress();
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-// 函数原型
-void waitForAnyKey();
-double getElapsedTime(LARGE_INTEGER startTime, LARGE_INTEGER frequency);
-void monitorKeyPress();
-
-
-
-
-
+//以下为调用windows HOOK
 
 //double GetKeyPressTimestamp();
 //
