@@ -1,69 +1,120 @@
 #include <stdio.h>
-#include <iostream>
 #include <stdlib.h>
 #include <conio.h>
 #include <Windows.h>
 
-// 初始化计时器频率
-void initializeTimer(LARGE_INTEGER* frequency) {
-    QueryPerformanceFrequency(frequency);
-}
 
-// 获取当前时间戳
-long getCurrentTimestamp(LARGE_INTEGER* frequency, LARGE_INTEGER* start_time) {
-    LARGE_INTEGER current_time;
-    QueryPerformanceCounter(&current_time);
-    return (long)(((double)current_time.QuadPart - (double)start_time->QuadPart) * 1000.0 / frequency->QuadPart);
-}
+#include <iostream>
 
-// 打印按键时间戳信息
-void printTimestamp(char key, const char* action, long timestamp) {
-    printf("按下的按键: %c\n", key);
-    printf("操作: %s\n", action);
-    printf("时间戳: %ldms\n\n", timestamp);
-}
+// 回调函数，用于处理按键事件
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    static DWORD startTime = 0;
 
-// 按键记录逻辑
-void recordKeystrokes(LARGE_INTEGER* frequency) {
-    int key;
-    long start_time, end_time;
-    LARGE_INTEGER start_counter;
-    LARGE_INTEGER current_counter;
-
-    printf("按下按键开始记录，按下ESC退出。\n");
-
-    // 获取起始时间戳和计数器
-    QueryPerformanceCounter(&start_counter);
-    start_time = getCurrentTimestamp(frequency, &start_counter);
-
-    while (1) {
-        if (_kbhit()) {
-            key = _getch();
-            if (key == 27) {
-                printf("\n程序已退出。\n");
-                break;
-            }
-
-            end_time = getCurrentTimestamp(frequency, &start_counter);
-            printTimestamp(key, "按下", end_time);
-
-            // 继续循环检测是否有松开的按键
-            while (_kbhit()) {
-                key = _getch();
-                if (key == 27) {
-                    printf("\n程序已退出。\n");
-                    break;
-                }
-            }
-
-            end_time = getCurrentTimestamp(frequency, &start_counter);
-            printTimestamp(key, "弹起", end_time);
+    if (nCode >= 0)
+    {
+        // 按下按键
+        if (wParam == WM_KEYDOWN)
+        {
+            KBDLLHOOKSTRUCT* kbStruct = (KBDLLHOOKSTRUCT*)lParam;
+            DWORD keyCode = kbStruct->vkCode;
+            DWORD timestamp = GetTickCount() - startTime;
+            char charCode = MapVirtualKeyA(keyCode, MAPVK_VK_TO_CHAR);
+            std::cout << "按下按键：" << charCode << "，时间戳：" << timestamp << "ms" << std::endl;
+        }
+        // 松开按键
+        else if (wParam == WM_KEYUP)
+        {
+            KBDLLHOOKSTRUCT* kbStruct = (KBDLLHOOKSTRUCT*)lParam;
+            DWORD keyCode = kbStruct->vkCode;
+            DWORD timestamp = GetTickCount() - startTime;
+            char charCode = MapVirtualKeyA(keyCode, MAPVK_VK_TO_CHAR);
+            std::cout << "松开按键：" << charCode << "，时间戳：" << timestamp << "ms" << std::endl;
         }
     }
+    else if (nCode == HC_ACTION && wParam == WM_SYSKEYDOWN)
+    {
+        // 开始计时
+        startTime = GetTickCount();
+    }
+
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
 
-//////////////////////////////////老版本/////////////////////////////////////////
+
+
+
+//
+//// 初始化计时器频率
+//void initializeTimer(LARGE_INTEGER* frequency) {
+//    QueryPerformanceFrequency(frequency);
+//}
+//
+//// 获取当前时间戳
+//long getCurrentTimestamp(LARGE_INTEGER* frequency, LARGE_INTEGER* start_time) {
+//    LARGE_INTEGER current_time;
+//    QueryPerformanceCounter(&current_time);
+//    return (long)(((double)current_time.QuadPart - (double)start_time->QuadPart) * 1000.0 / frequency->QuadPart);
+//}
+//
+//// 打印按键时间戳信息
+//void printTimestamp(char key, const char* action, long timestamp) {
+//    printf("按下的按键: %c\n", key);
+//    printf("操作: %s\n", action);
+//    printf("时间戳: %ldms\n\n", timestamp);
+//}
+//
+//// 按键记录逻辑
+//void recordKeystrokes(LARGE_INTEGER* frequency) {
+//    int key;
+//    long start_time, end_time;
+//    LARGE_INTEGER start_counter;
+//    LARGE_INTEGER current_counter;
+//    int is_key_down = 0;
+//
+//    printf("按下按键开始记录，按下ESC退出。\n");
+//
+//    // 获取起始时间戳和计数器
+//    QueryPerformanceCounter(&start_counter);
+//    start_time = getCurrentTimestamp(frequency, &start_counter);
+//
+//    while (1) {
+//        if (_kbhit()) {
+//            key = _getch();
+//            if (key == 27) {
+//                printf("\n程序已退出。\n");
+//                break;
+//            }
+//
+//            if (!is_key_down) {
+//                is_key_down = 1;
+//                end_time = getCurrentTimestamp(frequency, &start_counter);
+//                printTimestamp(key, "按下", end_time);
+//            }
+//        }
+//        else {
+//            if (is_key_down) {
+//                is_key_down = 0;
+//                end_time = getCurrentTimestamp(frequency, &start_counter);
+//                printTimestamp(key, "弹起", end_time);
+//            }
+//        }
+//    }
+//}
+//
+//int main() {
+//    LARGE_INTEGER frequency;
+//
+//    initializeTimer(&frequency);
+//    recordKeystrokes(&frequency);
+//
+//    return 0;
+//}
+//
+//
+//
+////////////////////////////////////老版本/////////////////////////////////////////
 
 //
 //

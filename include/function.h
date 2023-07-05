@@ -3,17 +3,21 @@
 
 
 
-// 初始化计时器频率
-void initializeTimer(LARGE_INTEGER* frequency);
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
-// 获取当前时间戳
-long getCurrentTimestamp(LARGE_INTEGER* frequency);
 
-// 打印按键时间戳信息
-void printTimestamp(char key, char* action, long timestamp);
-
-// 按键记录逻辑
-void recordKeystrokes(LARGE_INTEGER* frequency);
+//
+//// 初始化计时器频率
+//void initializeTimer(LARGE_INTEGER* frequency);
+//
+//// 获取当前时间戳
+//long getCurrentTimestamp(LARGE_INTEGER* frequency);
+//
+//// 打印按键时间戳信息
+//void printTimestamp(char key, char* action, long timestamp);
+//
+//// 按键记录逻辑
+//void recordKeystrokes(LARGE_INTEGER* frequency);
 
 
 //////////老版本//////////////
